@@ -2,12 +2,11 @@ package com.bigbank.knightroaster.configuration
 
 import com.bigbank.knightroaster.data.battle.BattleDao
 import com.bigbank.knightroaster.data.weather.WeatherDao
-import com.bigbank.knightroaster.domain.battle.BattleResultDecoder
-import com.bigbank.knightroaster.domain.battle.GetBattle
-import com.bigbank.knightroaster.domain.battle.RetreatFromBattle
-import com.bigbank.knightroaster.domain.battle.SendDragon
+import com.bigbank.knightroaster.data.battle.mapper.BattleResultMapper
+import com.bigbank.knightroaster.domain.battle.usecase.GetBattle
+import com.bigbank.knightroaster.domain.battle.usecase.RetreatFromBattle
+import com.bigbank.knightroaster.domain.battle.usecase.SendDragon
 import com.bigbank.knightroaster.domain.weather.GetWeatherOfBattle
-import com.bigbank.knightroaster.domain.weather.WeatherDecoder
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 
@@ -17,18 +16,16 @@ class UseCaseConfiguration {
     fun getBattle(battleDao: BattleDao) = GetBattle(battleDao)
 
     @Bean
-    fun getWeatherOfBattle(weatherDao: WeatherDao) = GetWeatherOfBattle(weatherDao, WeatherDecoder())
+    fun getWeatherOfBattle(weatherDao: WeatherDao) = GetWeatherOfBattle(weatherDao)
 
     @Bean
-    fun battleResultDecoder() = BattleResultDecoder()
+    fun battleResultDecoder() = BattleResultMapper()
 
     @Bean
-    fun sendDragon(battleDao: BattleDao,
-                   battleResultDecoder: BattleResultDecoder) =
-            SendDragon(battleDao, battleResultDecoder)
+    fun sendDragon(battleDao: BattleDao) =
+            SendDragon(battleDao)
 
     @Bean
-    fun retreatFromBattle(battleDao: BattleDao,
-                          battleResultDecoder: BattleResultDecoder) =
-            RetreatFromBattle(battleDao, battleResultDecoder)
+    fun retreatFromBattle(battleDao: BattleDao) =
+            RetreatFromBattle(battleDao)
 }

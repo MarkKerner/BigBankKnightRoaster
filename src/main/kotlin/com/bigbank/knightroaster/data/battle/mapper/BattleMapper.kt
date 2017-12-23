@@ -1,22 +1,13 @@
 package com.bigbank.knightroaster.data.battle.mapper
 
-import com.bigbank.knightroaster.data.battle.dto.KnightDto
 import com.bigbank.knightroaster.data.battle.dto.BattleDto
-import com.bigbank.knightroaster.domain.battle.Battle
-import com.bigbank.knightroaster.domain.battle.Knight
+import com.bigbank.knightroaster.domain.battle.entity.Battle
 
-class BattleMapper {
+class BattleMapper(
+        private val knightMapper: KnightMapper
+) {
     fun toDomain(dto: BattleDto) = Battle(
             dto.gameId,
-            knightToDomain(dto.knight)
+            knightMapper.toDomain(dto.knight)
     )
-
-    private fun knightToDomain(dto: KnightDto) =
-            Knight(
-                    dto.name,
-                    dto.attack,
-                    dto.armor,
-                    dto.agility,
-                    dto.endurance
-            )
 }

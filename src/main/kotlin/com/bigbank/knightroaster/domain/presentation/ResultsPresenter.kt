@@ -1,15 +1,12 @@
 package com.bigbank.knightroaster.domain.presentation
 
-import com.bigbank.knightroaster.domain.battle.BattleResult
+import com.bigbank.knightroaster.domain.battle.entity.BattleResult
+import com.bigbank.knightroaster.domain.battle.entity.FinalResult
 
 interface ResultsPresenter {
-
     fun displayBattleStart()
 
-    fun displayBattleResult(
-            result: BattleResult)
+    fun displayBattleResult(result: BattleResult)
 
-    fun displayFinalResult(
-            winPercentage: Double,
-            elapseSeconds: Double)
+    fun displayFinalResult(result: FinalResult)
 }

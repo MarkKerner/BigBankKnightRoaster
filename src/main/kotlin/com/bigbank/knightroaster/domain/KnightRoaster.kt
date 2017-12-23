@@ -1,6 +1,10 @@
 package com.bigbank.knightroaster.domain
 
-import com.bigbank.knightroaster.domain.battle.*
+import com.bigbank.knightroaster.domain.battle.entity.*
+import com.bigbank.knightroaster.domain.battle.usecase.GetBattle
+import com.bigbank.knightroaster.domain.battle.usecase.RetreatFromBattle
+import com.bigbank.knightroaster.domain.battle.usecase.SendDragon
+import com.bigbank.knightroaster.domain.dragon.Dragon
 import com.bigbank.knightroaster.domain.dragon.DragonKeeper
 import com.bigbank.knightroaster.domain.presentation.ResultsPresenter
 import com.bigbank.knightroaster.domain.weather.GetWeatherOfBattle
@@ -16,45 +20,65 @@ class KnightRoaster(
         private val retreatFromBattle: RetreatFromBattle,
         private val dragonKeeper: DragonKeeper
 ) {
-
     fun beginSlaughter(daysOfBattle: Int) {
         presenter.displayBattleStart()
 
-        val executor = Executors.newCachedThreadPool()
         val startTime = System.currentTimeMillis()
-        val results = executor.invokeAll(List(daysOfBattle, { Callable { fightBattle() } }))
-        val elapsedTime = (System.currentTimeMillis() - startTime) / 1000.0
-        executor.shutdown()
+        val results = War(daysOfBattle).fight()
+        val elapsedSeconds = (System.currentTimeMillis() - startTime) / 1000.0
 
-        presentBattleResults(results)
-        presentFinalResult(results, elapsedTime)
+        displayBattleResults(results)
+        displayFinalResult(results, elapsedSeconds)
     }
 
-    private fun presentBattleResults(results: MutableList<Future<BattleResult>>) {
-        results.forEach { presenter.displayBattleResult(it.get()) }
-    }
+    private inner class War(
+            private val daysOfBattle: Int) {
+        private val executor = Executors.newCachedThreadPool()
 
-    private fun presentFinalResult(results: MutableList<Future<BattleResult>>, elapsedTime: Double) {
-        val daysFought = results.size
-        val daysWon = results.filter { it.get().type == BattleResultType.VICTORY }.size
-        val winPercentage = (daysWon.toDouble() / daysFought.toDouble()) * 100.0
+        fun fight(): List<BattleResult> {
+            val futures = executor.invokeAll(createBattles())
+            executor.shutdown()
 
-        presenter.displayFinalResult(winPercentage, elapsedTime)
-    }
+            return extractResults(futures)
+        }
 
-    private fun fightBattle(): BattleResult {
-        val battle: Battle = getBattle.execute()
-        val weather: Weather = getWeather.execute(battle.id)
+        private fun createBattles() = List(daysOfBattle, { Callable { fightBattle() } })
 
-        return if (weather.type == WeatherType.STORM) {
-            retreatFromBattle.execute(battle.id)
-        } else {
-            val worthyDragon = when (weather.type) {
+        private fun fightBattle(): BattleResult {
+            val battle: Battle = getBattle.execute()
+            val weather: Weather = getWeather.execute(battle.id)
+
+            return if (weather.type == WeatherType.STORM) {
+                retreatFromBattle.execute(battle.id)
+            } else {
+                sendDragon.execute(
+                        getWorthyDragon(weather, battle.knight),
+                        battle.id)
+            }
+        }
+
+        private fun getWorthyDragon(weather: Weather, knight: Knight): Dragon {
+            return when (weather.type) {
                 WeatherType.FLOOD -> dragonKeeper.getFloodDragon()
                 WeatherType.THE_LONG_DRY -> dragonKeeper.getZenDragon()
-                else -> dragonKeeper.getForKnight(battle.knight)
+                else -> dragonKeeper.getForKnight(knight)
             }
-            sendDragon.execute(worthyDragon, battle.id)
         }
+
+        private fun extractResults(futures: List<Future<BattleResult>>) =
+                futures.map { it.get() }
+    }
+
+    private fun displayBattleResults(results: List<BattleResult>) {
+        results.forEach { presenter.displayBattleResult(it) }
+    }
+
+    private fun displayFinalResult(results: List<BattleResult>, elapsedSeconds: Double) {
+        presenter.displayFinalResult(
+                FinalResult(
+                        results.size,
+                        results.count { it.type == BattleResultType.VICTORY },
+                        elapsedSeconds
+                ))
     }
 }

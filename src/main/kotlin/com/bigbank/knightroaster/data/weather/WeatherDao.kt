@@ -1,18 +1,14 @@
 package com.bigbank.knightroaster.data.weather
 
-import com.bigbank.knightroaster.data.weather.dto.WeatherDto
-import com.bigbank.knightroaster.data.weather.mapper.WeatherMapper
-import com.bigbank.knightroaster.domain.weather.GetWeatherGateway
-import com.bigbank.knightroaster.domain.weather.EncodedWeather
-import org.springframework.beans.factory.annotation.Autowired
+import com.bigbank.knightroaster.domain.weather.GetWeatherOfBattleGateway
+import com.bigbank.knightroaster.domain.weather.Weather
 import org.springframework.web.client.RestTemplate
 
-class WeatherDao(private val mapper: WeatherMapper) : GetWeatherGateway {
+class WeatherDao(
+        private val restTemplate: RestTemplate,
+        private val mapper: WeatherMapper) : GetWeatherOfBattleGateway {
 
-    @Autowired
-    private lateinit var restTemplate: RestTemplate
-
-    override fun getWeather(battleId: Int): EncodedWeather {
+    override fun getWeather(battleId: Int): Weather {
         val dto = restTemplate.getForObject(
                 buildUrl(battleId),
                 WeatherDto::class.java

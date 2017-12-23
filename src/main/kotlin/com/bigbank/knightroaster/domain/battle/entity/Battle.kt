@@ -1,4 +1,4 @@
-package com.bigbank.knightroaster.domain.battle
+package com.bigbank.knightroaster.domain.battle.entity
 
 data class Battle(
         val id: Int,

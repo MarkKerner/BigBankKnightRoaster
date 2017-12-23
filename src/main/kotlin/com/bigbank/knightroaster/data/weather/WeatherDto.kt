@@ -1,4 +1,4 @@
-package com.bigbank.knightroaster.data.weather.dto
+package com.bigbank.knightroaster.data.weather
 
 import javax.xml.bind.annotation.*
 

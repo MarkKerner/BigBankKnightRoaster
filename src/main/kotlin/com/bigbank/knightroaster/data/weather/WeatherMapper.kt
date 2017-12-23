@@ -1,7 +1,10 @@
-package com.bigbank.knightroaster.domain.weather
+package com.bigbank.knightroaster.data.weather
 
-class WeatherDecoder {
-    fun decode(encodedWeather: EncodedWeather): Weather {
+import com.bigbank.knightroaster.domain.weather.Weather
+import com.bigbank.knightroaster.domain.weather.WeatherType
+
+class WeatherMapper {
+    fun toDomain(encodedWeather: WeatherDto): Weather {
         val type = when (encodedWeather.code) {
             "NMR" -> WeatherType.NORMAL
             "FUNDEFINEDG" -> WeatherType.FOG
@@ -10,6 +13,6 @@ class WeatherDecoder {
             "T E" -> WeatherType.THE_LONG_DRY
             else -> WeatherType.UNDEFINED
         }
-        return Weather(type, encodedWeather.description)
+        return Weather(type, encodedWeather.message)
     }
 }
